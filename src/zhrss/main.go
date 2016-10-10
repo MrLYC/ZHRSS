@@ -148,7 +148,7 @@ func main() {
 		"user time line page url",
 	)
 	flag.StringVar(&serverAddr, "addr", ":8080", "address to listen")
-	flag.StringVar(&locationName, "location", "utc", "location name")
+	flag.StringVar(&locationName, "location", "UTC", "location name")
 	flag.Int64Var(&info.CacheTTL, "cache", 600, "result cache ttl")
 	flag.Parse()
 
