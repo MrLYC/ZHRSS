@@ -143,6 +143,7 @@ func (i *sysInfo) handle(w http.ResponseWriter, r *http.Request) {
 func main() {
 	var serverAddr string
 	var locationName string
+	var urlPath string
 	i := new(sysInfo)
 
 	flag.StringVar(
@@ -152,6 +153,7 @@ func main() {
 	flag.StringVar(&serverAddr, "addr", ":8080", "address to listen")
 	flag.StringVar(&locationName, "location", "UTC", "location name")
 	flag.Int64Var(&i.CacheTTL, "cache", 600, "result cache ttl")
+	flag.StringVar(&urlPath, "path", "/", "url path")
 	flag.Parse()
 
 	location, err := time.LoadLocation(locationName)
@@ -164,7 +166,7 @@ func main() {
 		log.Fatal("refresh rss result failed: ", err)
 	}
 
-	http.HandleFunc("/", i.handle)
+	http.HandleFunc(urlPath, i.handle)
 	log.Printf("feed server for %s listen on %s", i.Link, serverAddr)
 	err = http.ListenAndServe(serverAddr, nil)
 	if err != nil {
