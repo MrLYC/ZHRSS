@@ -56,7 +56,7 @@ func (i *zhihuInfo) parseFeed(doc *goquery.Document) *feeds.Feed {
 		if err != nil {
 			continue
 		}
-		created := time.Unix(timestamp, 0)
+		created := time.Unix(timestamp, 0).UTC()
 		linkQ := item.Find(".zm-profile-section-main a").Last()
 
 		link, successed := linkQ.Attr("href")
@@ -93,14 +93,14 @@ func (i *zhihuInfo) parseFeed(doc *goquery.Document) *feeds.Feed {
 		Author: &feeds.Author{Name: doc.Find(
 			"div.title-section span.name",
 		).First().Text()},
-		Created: time.Now(),
+		Created: time.Now().UTC(),
 		Items:   items,
 	}
 }
 
 func (i *zhihuInfo) handle(w http.ResponseWriter, r *http.Request) {
 
-	now := time.Now()
+	now := time.Now().UTC()
 	if now.Before(i.NextCheckAt) {
 		log.Print("return result from cache")
 		fmt.Fprint(w, i.Result)
@@ -139,7 +139,7 @@ func (i *zhihuInfo) handle(w http.ResponseWriter, r *http.Request) {
 func main() {
 	var serverAddr string
 	info := new(zhihuInfo)
-	info.NextCheckAt = time.Now()
+	info.NextCheckAt = time.Now().UTC()
 
 	flag.StringVar(
 		&info.Link, "url", "https://www.zhihu.com/people/mr_lyc",
