@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -35,6 +37,10 @@ func (i *zhihuInfo) parseFeed(doc *goquery.Document) *feeds.Feed {
 	)
 	items := make([]*feeds.Item, 0, itemsQ.Length())
 	var item *goquery.Selection
+	linkInfo, err := url.Parse(i.Link)
+	if err != nil {
+		return nil
+	}
 
 	for i := 0; i < itemsQ.Length(); i++ {
 		item = itemsQ.Eq(i)
@@ -52,6 +58,9 @@ func (i *zhihuInfo) parseFeed(doc *goquery.Document) *feeds.Feed {
 		link, successed := linkQ.Attr("href")
 		if !successed {
 			continue
+		}
+		if strings.HasPrefix(link, "/") {
+			link = fmt.Sprintf("%s://%s%s", linkInfo.Scheme, linkInfo.Host, link)
 		}
 
 		title := linkQ.Text()
