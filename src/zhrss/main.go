@@ -49,16 +49,12 @@ func (i *sysInfo) parseFeed(doc *goquery.Document) *feeds.Feed {
 
 	for x := 0; x < itemsQ.Length(); x++ {
 		item = itemsQ.Eq(x)
-		dataTime, successed := item.Attr("data-time")
-		if !successed {
-			continue
-		}
-		timestamp, err := strconv.ParseInt(dataTime, 10, 64)
-		if err != nil {
-			continue
-		}
-		created := time.Unix(timestamp, 0).In(i.Location)
+
 		linkQ := item.Find(".zm-profile-section-main a").Last()
+		title := linkQ.Text()
+		if title == "" {
+			continue
+		}
 
 		link, successed := linkQ.Attr("href")
 		if !successed {
@@ -67,16 +63,23 @@ func (i *sysInfo) parseFeed(doc *goquery.Document) *feeds.Feed {
 		if strings.HasPrefix(link, "/") {
 			link = fmt.Sprintf("%s://%s%s", linkInfo.Scheme, linkInfo.Host, link)
 		}
+		id := stringToUUID(link)
 
-		title := linkQ.Text()
-		if title == "" {
+		dataTime, successed := item.Attr("data-time")
+		if !successed {
 			continue
 		}
-		author := item.Find(".author-link").Last().Text()
+		timestamp, err := strconv.ParseInt(dataTime, 10, 64)
+		if err != nil {
+			continue
+		}
 
+		created := time.Unix(timestamp, 0).In(i.Location)
+		author := item.Find(".author-link").Last().Text()
 		content := item.Find("textarea.content").Text()
 
 		items = append(items, &feeds.Item{
+			Id:          id,
 			Created:     created,
 			Title:       title,
 			Author:      &feeds.Author{Name: author},
@@ -86,6 +89,7 @@ func (i *sysInfo) parseFeed(doc *goquery.Document) *feeds.Feed {
 	}
 
 	return &feeds.Feed{
+		Id:    stringToUUID(i.Link),
 		Title: doc.Find("title").First().Text(),
 		Link:  &feeds.Link{Href: i.Link},
 		Description: doc.Find(
@@ -140,19 +144,31 @@ func (i *sysInfo) handle(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, i.Result)
 }
 
+func stringToUUID(s string) string {
+	var uuid [16]byte
+	for i := 0; i < len(s); i++ {
+		uuid[i%16] ^= s[i]
+	}
+	uuid[8] = (uuid[8] | 0x80) & 0xBf
+	uuid[6] = (uuid[6] | 0x40) & 0x4f
+	return fmt.Sprintf(
+		"%x-%x-%x-%x-%x", uuid[:4], uuid[4:6], uuid[6:8], uuid[8:10], uuid[10:],
+	)
+}
+
 func main() {
 	var serverAddr string
 	var locationName string
 	var urlPath string
-	i := new(sysInfo)
+	info := new(sysInfo)
 
 	flag.StringVar(
-		&i.Link, "url", "https://www.zhihu.com/people/mr_lyc",
+		&info.Link, "url", "https://www.zhihu.com/people/mr_lyc",
 		"user time line page url",
 	)
 	flag.StringVar(&serverAddr, "addr", ":8080", "address to listen")
 	flag.StringVar(&locationName, "location", "UTC", "location name")
-	flag.Int64Var(&i.CacheTTL, "cache", 600, "result cache ttl")
+	flag.Int64Var(&info.CacheTTL, "cache", 600, "result cache ttl")
 	flag.StringVar(&urlPath, "path", "/", "url path")
 	flag.Parse()
 
@@ -160,14 +176,14 @@ func main() {
 	if err != nil {
 		log.Fatal("load location failed: ", err)
 	}
-	i.Location = location
-	i.Result, err = i.refreshRSSResult()
+	info.Location = location
+	info.Result, err = info.refreshRSSResult()
 	if err != nil {
 		log.Fatal("refresh rss result failed: ", err)
 	}
 
-	http.HandleFunc(urlPath, i.handle)
-	log.Printf("feed server for %s listen on %s", i.Link, serverAddr)
+	http.HandleFunc(urlPath, info.handle)
+	log.Printf("feed server for %s listen on %s", info.Link, serverAddr)
 	err = http.ListenAndServe(serverAddr, nil)
 	if err != nil {
 		log.Fatal("server start failed: ", err)
