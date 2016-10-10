@@ -15,9 +15,7 @@ import (
 )
 
 type zhihuInfo struct {
-	Title       string
 	Link        string
-	Author      string
 	LastCheckAt time.Time
 }
 
@@ -81,12 +79,16 @@ func (i *zhihuInfo) parseFeed(doc *goquery.Document) *feeds.Feed {
 	}
 
 	return &feeds.Feed{
-		Title:       i.Title,
-		Link:        &feeds.Link{Href: i.Link},
-		Description: i.Title,
-		Author:      &feeds.Author{Name: i.Author},
-		Created:     time.Now(),
-		Items:       items,
+		Title: doc.Find("title").First().Text(),
+		Link:  &feeds.Link{Href: i.Link},
+		Description: doc.Find(
+			"div.zm-profile-header-description span.content",
+		).First().Text(),
+		Author: &feeds.Author{Name: doc.Find(
+			"div.title-section span.name",
+		).First().Text()},
+		Created: time.Now(),
+		Items:   items,
 	}
 }
 
