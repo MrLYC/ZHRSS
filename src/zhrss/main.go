@@ -58,7 +58,7 @@ func (i *zhihuInfo) parseFeed(doc *goquery.Document) *feeds.Feed {
 		if title == "" {
 			continue
 		}
-		author := item.Find(".author-link").Text()
+		author := item.Find(".author-link").Last().Text()
 
 		content := item.Find("textarea.content").Text()
 
