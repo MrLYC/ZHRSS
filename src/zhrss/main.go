@@ -18,6 +18,7 @@ type resultInfo struct {
 	CacheTTL    int64
 	NextCheckAt time.Time
 	Result      string
+	Refreshing  bool
 }
 
 type sysInfo struct {
@@ -126,13 +127,13 @@ func (i *sysInfo) refreshRSSResult() (string, error) {
 func (i *sysInfo) handle(w http.ResponseWriter, r *http.Request) {
 
 	now := time.Now().In(i.Location)
-	if now.Before(i.NextCheckAt) {
+	if i.Refreshing || now.Before(i.NextCheckAt) {
 		log.Print("return result from cache")
 		fmt.Fprint(w, i.Result)
 		return
 	}
 
-	i.NextCheckAt = now.Add(time.Duration(i.CacheTTL) * time.Second)
+	i.Refreshing = true
 	rss, err := i.refreshRSSResult()
 	if err != nil {
 		log.Print("return result from cache due to :", err)
@@ -140,6 +141,8 @@ func (i *sysInfo) handle(w http.ResponseWriter, r *http.Request) {
 		i.Result = rss
 		log.Print("next check at ", i.NextCheckAt)
 	}
+	i.Refreshing = false
+	i.NextCheckAt = now.Add(time.Duration(i.CacheTTL) * time.Second)
 
 	fmt.Fprint(w, i.Result)
 }
@@ -176,6 +179,7 @@ func main() {
 	if err != nil {
 		log.Fatal("load location failed: ", err)
 	}
+	info.Refreshing = false
 	info.Location = location
 	info.Result, err = info.refreshRSSResult()
 	if err != nil {
