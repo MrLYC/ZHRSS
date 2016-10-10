@@ -114,6 +114,7 @@ func main() {
 		"user time line page url",
 	)
 	flag.StringVar(&serverAddr, "a", ":8080", "address to listen")
+	flag.Parse()
 
 	http.HandleFunc("/", info.handle)
 	err := http.ListenAndServe(serverAddr, nil)
