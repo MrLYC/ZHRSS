@@ -14,18 +14,23 @@ import (
 	"github.com/gorilla/feeds"
 )
 
-type zhihuInfo struct {
-	Link        string
-	LastCheckAt time.Time
+type resultInfo struct {
+	CacheTTL    int64
+	NextCheckAt time.Time
+	Result      string
 }
 
-func (i *zhihuInfo) checkAndFetch() (*goquery.Document, error) {
+type zhihuInfo struct {
+	resultInfo
+	Link string
+}
+
+func (i *zhihuInfo) fetchDoc() (*goquery.Document, error) {
 	doc, err := goquery.NewDocument(i.Link)
 	if err != nil {
 		return nil, err
 	}
 
-	i.LastCheckAt = time.Now()
 	return doc, nil
 }
 
@@ -37,6 +42,7 @@ func (i *zhihuInfo) parseFeed(doc *goquery.Document) *feeds.Feed {
 	var item *goquery.Selection
 	linkInfo, err := url.Parse(i.Link)
 	if err != nil {
+		log.Print("parse feed failed due to: ", err)
 		return nil
 	}
 
@@ -93,33 +99,60 @@ func (i *zhihuInfo) parseFeed(doc *goquery.Document) *feeds.Feed {
 }
 
 func (i *zhihuInfo) handle(w http.ResponseWriter, r *http.Request) {
-	doc, err := i.checkAndFetch()
+
+	now := time.Now()
+	if now.Before(i.NextCheckAt) {
+		log.Print("return result from cache")
+		fmt.Fprint(w, i.Result)
+		return
+	}
+	log.Print("ready to refresh result")
+
+	doc, err := i.fetchDoc()
 	if err != nil {
+		log.Print("return result from cache due to: ", err)
+		fmt.Fprint(w, i.Result)
 		return
 	}
 	feed := i.parseFeed(doc)
-	rss, err := feed.ToRss()
-	if err != nil {
+	if feed == nil {
+		log.Print("return result from cache due to empty feed")
+		fmt.Fprint(w, i.Result)
 		return
 	}
-	fmt.Fprint(w, rss)
+
+	rss, err := feed.ToRss()
+	if err != nil {
+		log.Print("return result from cache due to: ", err)
+		fmt.Fprint(w, i.Result)
+		return
+	}
+	if i.NextCheckAt.Before(now) {
+		i.Result = rss
+		i.NextCheckAt = now.Add(time.Duration(i.CacheTTL) * time.Second)
+		log.Print("next check at ", i.NextCheckAt)
+	}
+
+	fmt.Fprint(w, i.Result)
 }
 
 func main() {
 	var serverAddr string
 	info := new(zhihuInfo)
+	info.NextCheckAt = time.Now()
 
 	flag.StringVar(
-		&info.Link, "u", "https://www.zhihu.com/people/mr_lyc",
+		&info.Link, "url", "https://www.zhihu.com/people/mr_lyc",
 		"user time line page url",
 	)
-	flag.StringVar(&serverAddr, "a", ":8080", "address to listen")
+	flag.StringVar(&serverAddr, "addr", ":8080", "address to listen")
+	flag.Int64Var(&info.CacheTTL, "cache", 600, "result cache ttl")
 	flag.Parse()
 
 	http.HandleFunc("/", info.handle)
+	log.Printf("feed server for %s listen on %s", info.Link, serverAddr)
 	err := http.ListenAndServe(serverAddr, nil)
 	if err != nil {
 		log.Fatal("server start failed: ", err)
 	}
-
 }
