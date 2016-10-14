@@ -27,7 +27,7 @@ visit your time line feed details: [http://127.0.0.1:8080/zhihu.xml](http://127.
 ### Docker 
 
 ```shell
-docker run mrlyc/zhrss -p 8080:80 -e URL=https://www.zhihu.com/people/<user_id> -path /zhihu.xml
+docker run mrlyc/zhrss -p 8080:80 -e URL=https://www.zhihu.com/people/<user_id> -e PATH=/zhihu.xml
 ```
 
 visit: http://127.0.0.1:8080/zhihu.xml
