@@ -1,7 +1,7 @@
-GOENV := env GOPATH=$(GOPATH):`pwd`
+GOENV := env GOPATH=$(shell pwd)
 
 .PHONY: compile
-compile:
+compile: bootstrap
 	$(GOENV) go build -o bin/zhrss zhrss
 
 .PHONY: bootstrap

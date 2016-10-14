@@ -29,4 +29,5 @@ _testmain.go
 # external packages folder
 vendor/
 bin/
-src/github.com
+src/github.com/
+src/golang.org/
