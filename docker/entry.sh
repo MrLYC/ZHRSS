@@ -1,3 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
-/app/ZHRSS/bin/zhrss -url=${URL} -location=${LOCATION} -cache=${CACHE} -path=${PATH} -addr=${ADDR}
+echo $PATH
+/bin/zhrss -url=${URL} -location=${LOCATION} -cache=${CACHE} -path=${PATH} -addr=${ADDR}

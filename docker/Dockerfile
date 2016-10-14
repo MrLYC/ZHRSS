@@ -5,13 +5,16 @@ MAINTAINER LYC <imyikong@gmail.com>
 ADD entry.sh /entry.sh
 
 RUN apk update && \
-    apk add go git make && \
-    mkdir /app/ && \
-    git clone https://github.com/MrLYC/ZHRSS.git /app/ZHRSS && \
-    make -C /app/ZHRSS/ && \
-    mv /app/ZHRSS/bin/zhrss /app/zhrss && \
-    apk del go git make && \
-    rm -r /app/ZHRSS/
+    apk add git make go && \
+    git clone https://github.com/MrLYC/ZHRSS.git && \
+    make -C /ZHRSS/ && \
+    mv /ZHRSS/bin/zhrss /bin/zhrss && \
+    cp /usr/lib/go/lib/time/zoneinfo.zip / && \
+    apk del make git go && \
+    mkdir -p /usr/lib/go/lib/time/ && \
+    mv /zoneinfo.zip /usr/lib/go/lib/time/zoneinfo.zip && \
+    apk add ca-certificates && \
+    rm -r /ZHRSS/
 
 EXPOSE 80
 
