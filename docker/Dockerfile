@@ -2,11 +2,11 @@ FROM golang
 
 MAINTAINER LYC <imyikong@gmail.com>
 
+ADD entry.sh /entry.sh
+
 RUN mkdir /app/ && \
     git clone https://github.com/MrLYC/ZHRSS.git /app/ZHRSS && \
     make -C /app/ZHRSS/
-
-ADD entry.sh /entry.sh
 
 EXPOSE 80
 
