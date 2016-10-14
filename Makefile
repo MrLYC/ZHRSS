@@ -1,7 +1,8 @@
+SOURCES=$(wildcard src/zhrss/*.go)
 GOENV := env GOPATH=$(shell pwd)
 
-.PHONY: compile
-compile: bootstrap
+bin/zhrss: $(SOURCES)
+	make bootstrap
 	$(GOENV) go build -o bin/zhrss zhrss
 
 .PHONY: bootstrap
