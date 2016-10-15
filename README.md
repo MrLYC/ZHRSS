@@ -22,15 +22,17 @@ make
 
 visit your time line feed details: [http://127.0.0.1:8080/zhihu.xml](http://127.0.0.1:8080/zhihu.xml).
 
-
+[![asciicast](https://asciinema.org/a/8j02jndmossozyh3oh98hajfp.png)](https://asciinema.org/a/8j02jndmossozyh3oh98hajfp?autoplay=true&speed=2)
 
 ### Docker 
 
 ```shell
-docker run mrlyc/zhrss -p 8080:80 -e URL=https://www.zhihu.com/people/<user_id> -e PATH=/zhihu.xml
+docker run -p 8080:80 mrlyc/zhrss -e URL=https://www.zhihu.com/people/<user_id> -e PATH=/zhihu.xml
 ```
 
 visit: http://127.0.0.1:8080/zhihu.xml
+
+[![asciicast](https://asciinema.org/a/eyur384ud459b53j9l6091ala.png)](https://asciinema.org/a/eyur384ud459b53j9l6091ala?autoplay=true&speed=2)
 
 
 
