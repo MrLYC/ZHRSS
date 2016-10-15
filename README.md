@@ -20,7 +20,7 @@ make
 .bin/zhrss -url https://www.zhihu.com/people/<user_id> -path /zhihu.xml
 ```
 
-visit your time line feed details: [http://127.0.0.1:8080/zhihu.xml](http://127.0.0.1:8080/zhihu.xml).
+visit your time line feed details: [http://127.0.0.1:8080/zhihu.xml](http://127.0.0.1:8080/zhihu.xml)
 
 [![asciicast](https://asciinema.org/a/8j02jndmossozyh3oh98hajfp.png)](https://asciinema.org/a/8j02jndmossozyh3oh98hajfp?autoplay=true&speed=2)
 
