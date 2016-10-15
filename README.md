@@ -38,5 +38,5 @@ visit: http://127.0.0.1:8080/zhihu.xml
 
 ## DEMO
 
-![rss-icon](https://raw.githubusercontent.com/MrLYC/ZHRSS/master/docs/images/rss.gif)[刘奕聪 - 知乎](https://zhrss.arukascloud.io/)
+![rss-icon](https://mrlyc.github.io/ZHRSS/images/rss.png)[刘奕聪 - 知乎](https://zhrss.arukascloud.io/)
 
